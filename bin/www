@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 
+require('../connection');
 var app = require('../app');
 var debug = require('debug')('mahalaxmi-admin:server');
 var http = require('http');
