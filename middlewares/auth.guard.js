@@ -20,7 +20,6 @@ const auth = async (req, res, next) => {
       if (authArray && authArray.length > 0 && authArray[1]) {
         const token = authArray[1];
         const decodedToken = jwt.verify(token, `${process.env.JWT_SECRET_KEY}`);
-
         const userObj = await userModel.findOne({
           _id: decodedToken._id,
           email: decodedToken.email,

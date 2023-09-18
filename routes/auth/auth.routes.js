@@ -11,10 +11,11 @@ const {
   login,
   logout,
   // resetPassword,
-  // changePassword,
+  changePassword,
   // forgotPassword,
   // checkResetPasswordToken,
 } = require("../../controllers/auth/auth.controller");
+const { ChangePasswordValidationRules } = require("../../validation_rules/password.validation");
 authRouters.post("/login", loginValidationRules(), validateApi, login);
 
 authRouters.get("/logout", auth, logout);
@@ -26,13 +27,7 @@ authRouters.get("/logout", auth, logout);
 //   resetPassword
 // );
 
-// authRouters.post(
-//   "/change-password",
-//   ChangePasswordValidationRules(),
-//   validateApi,
-//   auth,
-//   changePassword
-// );
+authRouters.post("/change-password",  ChangePasswordValidationRules(),  validateApi,  auth, changePassword );
 
 // authRouters.post(
 //   "/forgot-password",

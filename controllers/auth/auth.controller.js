@@ -158,78 +158,78 @@ const logout = async (req, res) => {
 //   }
 // };
 
-// const changePassword = async (req, res) => {
-//   try {
-//     const { _id } = req[AUTH_USER_DETAILS];
-//     const { old_password, new_password } = req.body;
+const changePassword = async (req, res) => {
+  try {
+    const { _id } = req[AUTH_USER_DETAILS];
+    const { old_password, new_password } = req.body;
 
-//     const user = await User.findOne({ _id: _id });
-//     if (user) {
-//       const passwordHash = user.password;
-//       const isValidPassword = await comparePasswordHash(
-//         old_password,
-//         passwordHash
-//       );
+    const user = await userModel.findOne({ _id: _id });
+    if (user) {
+      const passwordHash = user.password;
+      const isValidPassword = await comparePasswordHash(
+        old_password,
+        passwordHash
+      );
 
-//       if (isValidPassword) {
-//         const encryptedPassword = await bcrypt.hashSync(new_password, 12);
-//         const changePassword = await User.findByIdAndUpdate(
-//           { _id },
-//           { password: encryptedPassword }
-//         );
+      if (isValidPassword) {
+        const encryptedPassword = await bcrypt.hashSync(new_password, 12);
+        const changePassword = await userModel.findByIdAndUpdate(
+          { _id },
+          { password: encryptedPassword }
+        );
 
-//         if (changePassword) {
-//           const responsePayload = {
-//             status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
-//             message: AUTH_MESSAGES.PASSWORD_RESET_SUCCESSFULL,
-//             data: null,
-//             error: null,
-//           };
+        if (changePassword) {
+          const responsePayload = {
+            status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
+            message: AUTH_MESSAGES.CHANGE_PASSWORD_SUCCESSFULL,
+            data: null,
+            error: null,
+          };
 
-//           return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-//         } else {
-//           const responsePayload = {
-//             status: RESPONSE_PAYLOAD_STATUS_ERROR,
-//             message: AUTH_MESSAGES.PASSWORD_RESET_UN_SUCCESSFULL,
-//             data: null,
-//             error: AUTH_MESSAGES.PASSWORD_RESET_UN_SUCCESSFULL,
-//           };
+          return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+        } else {
+          const responsePayload = {
+            status: RESPONSE_PAYLOAD_STATUS_ERROR,
+            message: AUTH_MESSAGES.CHANGE_PASSWORD_UN_SUCCESSFULL,
+            data: null,
+            error: AUTH_MESSAGES.CHANGE_PASSWORD_UN_SUCCESSFULL,
+          };
 
-//           return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-//         }
-//       } else {
-//         const responsePayload = {
-//           status: RESPONSE_PAYLOAD_STATUS_ERROR,
-//           message: AUTH_MESSAGES.CURRENT_PASSWORD_INVALID,
-//           data: null,
-//           error: AUTH_MESSAGES.CURRENT_PASSWORD_INVALID,
-//         };
+          return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+        }
+      } else {
+        const responsePayload = {
+          status: RESPONSE_PAYLOAD_STATUS_ERROR,
+          message: AUTH_MESSAGES.CURRENT_PASSWORD_INVALID,
+          data: null,
+          error: AUTH_MESSAGES.CURRENT_PASSWORD_INVALID,
+        };
 
-//         return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-//       }
-//     } else {
-//       const responsePayload = {
-//         status: RESPONSE_PAYLOAD_STATUS_ERROR,
-//         message: USER_MESSAGES.USERS_NOT_FOUND,
-//         data: null,
-//         error: AUTH_MESSAGES.INVALID_CREDENTIALS,
-//       };
+        return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+      }
+    } else {
+      const responsePayload = {
+        status: RESPONSE_PAYLOAD_STATUS_ERROR,
+        message: AUTH_MESSAGES.INVALID_CREDENTIALS,
+        data: null,
+        error: AUTH_MESSAGES.INVALID_CREDENTIALS,
+      };
 
-//       return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-//     }
-//   } catch (err) {
-//     const responsePayload = {
-//       status: RESPONSE_PAYLOAD_STATUS_ERROR,
-//       message: null,
-//       data: null,
-//       error: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
-//     };
+      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+    }
+  } catch (err) {
+    const responsePayload = {
+      status: RESPONSE_PAYLOAD_STATUS_ERROR,
+      message: null,
+      data: null,
+      error: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
+    };
 
-//     return res
-//       .status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR)
-//       .json(responsePayload);
-//   }
-// };
+    return res
+      .status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR)
+      .json(responsePayload);
+  }
+};
 
 // // Forgot password
 // const forgotPassword = async (req, res) => {
@@ -316,7 +316,7 @@ module.exports = {
   login,
   logout,
   // resetPassword,
-  // changePassword,
+  changePassword,
   // forgotPassword,
   // checkResetPasswordToken,
 };
