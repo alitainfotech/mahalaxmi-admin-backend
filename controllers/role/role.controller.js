@@ -15,6 +15,18 @@ const addRoles = async (req, res) => {
     try {
         const { name, roles } = req.body
 
+        const existingRoles = await roleModel.findOne({ name });
+
+        if (existingRoles) {
+            const responsePayload = {
+                status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
+                message: ROLE_MESSAGES.ROLE_ALREADY_EXISTS,
+                data: null,
+                error: ROLE_MESSAGES.ROLE_ALREADY_EXISTS,
+            };
+            return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+        }
+
         const addedRoles = await roleModel.create({
             name,
             roles
@@ -85,89 +97,20 @@ const getRolesById = async (req, res) => {
 }
 
 // Get All Roles details
-// const getAllRoles = async (req, res) => {
-//     try {
-//         const rolesData = await roleModel.find();
-//         console.log("rolesData", rolesData);
-
-//         if (rolesData && rolesData.length > 0) {
-
-//             const activeRolesData = rolesData.filter(role => !role.is_deleted);
-
-//             const responsePayload = {
-//                 status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
-//                 message: ROLE_MESSAGES.ROLE_ID_FOUND,
-//                 data: rolesData,
-//                 error: null,
-//             };
-
-//             return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-//         } else {
-//             const responsePayload = {
-//                 status: RESPONSE_PAYLOAD_STATUS_ERROR,
-//                 message: ROLE_MESSAGES.ROLE_ID_NOT_FOUND,
-//                 data: null,
-//                 error: ROLE_MESSAGES.ROLE_ID_NOT_FOUND,
-//             };
-
-//             return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-//         }
-//     }
-//     catch (err) {
-//         console.log(err);
-//         const responsePayload = {
-//             status: RESPONSE_PAYLOAD_STATUS_ERROR,
-//             message: null,
-//             data: null,
-//             error: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
-//         };
-
-//         return res
-//             .status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR)
-//             .json(responsePayload);
-//     }
-// }
-
 const getAllRoles = async (req, res) => {
     try {
-        const rolesData = await roleModel.find();
-        // console.log("rolesData", rolesData);
 
-        if (rolesData && rolesData.length > 0) {
-            const activeRolesData = rolesData.filter(role => !role.is_deleted);
-            console.log(activeRolesData);
+        let rolesData = await roleModel.find({ is_deleted: false });
 
-            if (activeRolesData.length > 0) {
-                const responsePayload = {
-                    status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
-                    message: ROLE_MESSAGES.ROLE_ID_FOUND,
-                    data: activeRolesData,
-                    error: null,
-                };
+        const responsePayload = {
+            status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
+            message: ROLE_MESSAGES.ROLE_ID_FOUND,
+            data: rolesData || [],
+            error: null,
+        };
 
-                return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-            } else {
-                const responsePayload = {
-                    status: RESPONSE_PAYLOAD_STATUS_ERROR,
-                    message: ROLE_MESSAGES.ROLE_ID_NOT_FOUND,
-                    data: null,
-                    error: ROLE_MESSAGES.ROLE_ID_NOT_FOUND,
-                };
-
-                return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-            }
-        } else {
-            const responsePayload = {
-                status: RESPONSE_PAYLOAD_STATUS_ERROR,
-                message: ROLE_MESSAGES.ROLE_ID_NOT_FOUND,
-                data: null,
-                error: ROLE_MESSAGES.ROLE_ID_NOT_FOUND,
-            };
-
-            return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-        }
+        return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
     } catch (err) {
-        console.log(err);
         const responsePayload = {
             status: RESPONSE_PAYLOAD_STATUS_ERROR,
             message: null,
@@ -175,12 +118,9 @@ const getAllRoles = async (req, res) => {
             error: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
         };
 
-        return res
-            .status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR)
-            .json(responsePayload);
+        return res.status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR).json(responsePayload);
     }
-}
-
+};
 
 // Update Roles
 const updateRoles = async (req, res) => {

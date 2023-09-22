@@ -19,11 +19,11 @@ const roleSchema = new mongoose.Schema(
             type: String
           }
         ],
-        is_deleted: { type: Boolean, default: false, required: false },
-        deleted_by: { type: mongoose.Schema.Types.ObjectId, ref: USER, required: false, default: null },
-        deleted_at: { type: Date, required: false, default: null },
       }
-    ]
+    ],
+    is_deleted: { type: Boolean, default: false, required: false },
+    deleted_by: { type: mongoose.Schema.Types.ObjectId, ref: USER, required: false, default: null },
+    deleted_at: { type: Date, required: false, default: null },
   },
   {
     timestamps: true,
