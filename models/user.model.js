@@ -20,7 +20,7 @@ const userSchema = new Schema(
         gender: { type: String, max: 10, default: null, required: false, },
         dob: { type: Date, default: null, required: false },
         joining_date: { type: Date, default: null, required: false },
-        salary: { type: Number, max: 12, default: null, required: false },
+        salary: { type: Number, default: null, required: false },
         account_number: { type: String, max: 100, default: null, required: false },
         ifsc_code: { type: String, max: 100, default: null, required: false },
         holder_name: { type: String, max: 200, default: null, required: false },
@@ -37,4 +37,4 @@ const userSchema = new Schema(
         timestamps: true,
     }
 )
-module.exports = mongoose.model(USER,userSchema)
+module.exports = mongoose.model(USER, userSchema)

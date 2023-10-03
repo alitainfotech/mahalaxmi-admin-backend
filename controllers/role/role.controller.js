@@ -175,14 +175,11 @@ const deleteRoles = async (req, res) => {
         const { id } = req.params;
         const user = await getCurrentLoginUser(req);
 
-        const deleteRoles = await roleModel.findByIdAndUpdate(
-            id,
+        const deleteRoles = await roleModel.findByIdAndUpdate(id,
             {
-                $set: {
-                    'roles.$[].is_deleted': true,
-                    'roles.$[].deleted_by': user._id,
-                    'roles.$[].deleted_at': new Date()
-                }
+                is_deleted: true,
+                deleted_by: user._id,
+                deleted_at: new Date()
             },
             { new: true }
         )
