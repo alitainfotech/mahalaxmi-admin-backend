@@ -24,17 +24,31 @@ const db = async () => {
     const permissionCount = await permissionModel.estimatedDocumentCount();
     const roleCount = await roleModel.estimatedDocumentCount();
     const userCount = await userModel.estimatedDocumentCount();
-    if(!permissionCount){
+    const bankCount = await bankModel.estimatedDocumentCount();
+    const paymentModeCount = await paymentModeModel.estimatedDocumentCount();
+    const designationCount = await bankModel.estimatedDocumentCount();
+    const branchCount = await branchModel.estimatedDocumentCount();
+
+    if (!permissionCount) {
       await permissionModel.insertMany(permissionsSeed)
     }
-    if(!roleCount){
+    if (!roleCount) {
       var role = await roleModel.insertMany(roleSeed)
     }
-    // var bank = await bankModel.insertMany(bankSeed)
-    // var paymentMode = await paymentModeModel.insertMany(paymentModeSeed)
-    // var designation = await designationModel.insertMany(designationSeed)
-    // var branch = await branchModel.insertMany(branchSeed)
-    if(!userCount){
+    if (!bankCount){
+      var bank = await bankModel.insertMany(bankSeed)
+    }
+    if(!paymentModeCount){
+      var paymentMode = await paymentModeModel.insertMany(paymentModeSeed)
+    }
+    if(!designationCount){
+      var designation = await designationModel.insertMany(designationSeed)
+    }
+    if(!branchCount){
+      var branch = await branchModel.insertMany(branchSeed)
+    }
+    
+    if (!userCount) {
       await userModel.insertMany([
         {
           code: "MAHO-01",

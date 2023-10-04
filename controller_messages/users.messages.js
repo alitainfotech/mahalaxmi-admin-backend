@@ -9,6 +9,9 @@ const USERS_MESSAGES = {
     USERS_IS_EMPTY: "Users is empty",
     USERS_DELETED: "Users has been deleted",
     USERS_NOT_DELETED: "Sorry Users has not been deleted",
+    USERS_PASSWORD_CHANGE: "Users Password has been Changed",
+    USERS_PASSWORD_NOT_CHANGE: "Users Password has not been Changed",
+
 
     USERS_NAME_ERROR_EMPTY: "Please Enter Your Roles Name",
     USERS_ERROR_EMPTY: "Please Enter Your Roles",

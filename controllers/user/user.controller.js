@@ -286,7 +286,7 @@ const addLogInToken = async (token, id) => {
 const addUsers = async (req, res) => {
   try {
     const {
-      code, role, branch, designation,
+      role, branch, designation,
       first_name, middle_name, last_name,
       email, password, phone_number, address,
       city, state, gender, dob, joining_date,
@@ -366,7 +366,6 @@ const addUsers = async (req, res) => {
     }
 
   } catch (error) {
-    console.log(error);
     const responsePayload = {
       status: RESPONSE_PAYLOAD_STATUS_ERROR,
       message: null,
@@ -521,7 +520,6 @@ const deleteUsers = async (req, res) => {
       return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
     }
   } catch (err) {
-    console.log(err);
     const responsePayload = {
       status: RESPONSE_PAYLOAD_STATUS_ERROR,
       message: null,
@@ -534,12 +532,58 @@ const deleteUsers = async (req, res) => {
   }
 }
 
+const changePasswordByAdmin = async (req, res) => {
+  try {
+
+    const { _id } = req[AUTH_USER_DETAILS];
+    const { password } = req.body;
+
+
+    const encryptedPassword = await bcrypt.hashSync(password, 12);
+    const changePassword = await userModel.findByIdAndUpdate(
+      { _id },
+      { password: encryptedPassword },
+      { new: true }
+    );
+
+    if (changePassword) {
+      const responsePayload = {
+        status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
+        message: USERS_MESSAGES.USERS_PASSWORD_CHANGE,
+        data: changePassword,
+        error: null
+      };
+      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+    } else {
+      const responsePayload = {
+        status: RESPONSE_PAYLOAD_STATUS_ERROR,
+        message: USERS_MESSAGES.USERS_PASSWORD_NOT_CHANGE,
+        data: null,
+        error: null
+      };
+      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+    }
+  } catch (error) {
+    const responsePayload = {
+      status: RESPONSE_PAYLOAD_STATUS_ERROR,
+      message: null,
+      data: null,
+      error: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
+    };
+    return res
+      .status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR)
+      .json(responsePayload);
+  }
+};
+
+
 module.exports = {
   addLogInToken,
   addUsers,
   getUserById,
   updateUser,
-  deleteUsers
+  deleteUsers,
+  changePasswordByAdmin
   // addResetPasswordToken,
   // getUser,
   // getUserAll,

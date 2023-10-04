@@ -10,6 +10,10 @@ const { userRouters } = require('./users/users.routes');
 
 const indexRouter = new express.Router();
 
+indexRouter.get("/",(req,res)=>{
+    return res.send("Welcome to Mahalaxmi");
+})
+
 indexRouter.use("/auth", authRouters);
 indexRouter.use("/permission", permissionRouters);
 indexRouter.use("/roles", rolesRouter)

@@ -3,12 +3,9 @@ const { AUTH_MESSAGES } = require("../controller_messages/auth.messages");
 
 const loginValidationRules = () => {
   return checkSchema({
-    email: {
+    code: {
       notEmpty: {
-        errorMessage: AUTH_MESSAGES.EMAIL_ERROR_EMPTY,
-      },
-      isEmail: {
-        errorMessage: AUTH_MESSAGES.EMAIL_ERROR_INVALID,
+        errorMessage: AUTH_MESSAGES.CODE_ERROR_EMPTY,
       },
     },
     password: {

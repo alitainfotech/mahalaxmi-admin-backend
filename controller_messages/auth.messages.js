@@ -3,6 +3,7 @@ const AUTH_MESSAGES = {
   INVALID_CREDENTIALS: "Please Enter Valid Credentials.",
   EMAIL_ERROR_EMPTY: "Please Enter Your Email Address.",
   EMAIL_ERROR_INVALID: "Please Enter Valid Email Address.",
+  CODE_ERROR_EMPTY: "Please Enter Your Email Address.",
   EMAIL_UNIQUE: "Email must be unique",
   PASSWORD_ERROR_EMPTY: "Please Enter Your Password",
   EMAIL_SENT: "Check your mail box for a link shared to change password.",

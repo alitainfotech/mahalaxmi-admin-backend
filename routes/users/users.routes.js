@@ -3,7 +3,8 @@ const {
     addUsers,
     getUserById,
     updateUser,
-    deleteUsers
+    deleteUsers,
+    changePasswordByAdmin
 } = require("../../controllers/user/user.controller");
 const { usersValidationRules } = require("../../validation_rules/user.validation");
 const validateApi = require("../../middlewares/validator");
@@ -14,6 +15,7 @@ const userRouters = express.Router()
 userRouters.post("/add", uploadProfileImage.single("profile_photo"), usersValidationRules(), validateApi, addUsers)
 userRouters.put("/updateUsers/:id", auth, usersValidationRules(), validateApi, updateUser)
 userRouters.put("/deleteUsers/:id", auth, deleteUsers)
+userRouters.put("/changePassword", auth, changePasswordByAdmin)
 userRouters.get("/:id", getUserById)
 
 module.exports = {

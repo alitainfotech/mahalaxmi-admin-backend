@@ -19,18 +19,19 @@ const { AUTH_MESSAGES } = require("../../controller_messages/auth.messages");
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { code, password } = req.body;
     const user = await userModel.findOne({
-      email: email,
+      code: code,
     });
 
+    console.log(user)
     if (user && (await comparePasswordHash(password, user.password))) {
       const userObj = user.toJSON();
       delete userObj.password;
       const tokenObj = {
         _id: userObj._id,
+        code: userObj.code,
         email: userObj.email,
-        name: userObj.name,
       };
       const token = authService.generateToken(tokenObj);
       await addLogInToken(token, user._id);
