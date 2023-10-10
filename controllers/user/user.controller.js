@@ -13,6 +13,8 @@ const userModel = require("../../models/user.model");
 const { USERS_MESSAGES } = require("../../controller_messages/users.messages");
 const branchModel = require("../../models/branch.model");
 const { getCurrentLoginUser } = require("../../helpers/fn");
+const roleModel = require("../../models/role.model");
+const { default: mongoose } = require("mongoose");
 
 // const {
 //   forgotPasswordMailer,
@@ -379,34 +381,47 @@ const addUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    let userData = req[AUTH_USER_DETAILS];
-    let user = userData._id;
+    const { id } = req.params;
 
-    let userDetails = await userModel.findOne({ _id: user },
+    const userObj = await userModel.aggregate([
       {
-        password: 0,
-        token: 0,
-        reset_password_token: 0,
-      });
+        $match: { _id: new mongoose.Types.ObjectId(id), is_deleted: false }
+      },
+      {
+        $project: {
+          password: 0,
+          token: 0,
+          reset_password_token: 0,
+        }
+      },
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'role',
+          foreignField: '_id',
+          as: 'roles'
+        }
+      }
+    ]);
 
-    const userObj = userDetails.toJSON();
-
-    if (userObj) {
+    if (userObj.length > 0) {
       const responsePayload = {
         status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
         message: USERS_MESSAGES.USERS_ID_FOUND,
-        data: userObj,
+        data: {
+          user: userObj[0]
+        },
         error: null
-      }
-      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload)
+      };
+      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
     } else {
       const responsePayload = {
         status: RESPONSE_PAYLOAD_STATUS_ERROR,
         message: USERS_MESSAGES.USERS_ID_NOT_FOUND,
         data: null,
         error: null
-      }
-      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload)
+      };
+      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
     }
   } catch (error) {
     const responsePayload = {
@@ -414,11 +429,11 @@ const getUserById = async (req, res) => {
       message: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
       data: null,
       error: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR
-    }
-    return res.status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR).json(responsePayload)
-
+    };
+    return res.status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR).json(responsePayload);
   }
-}
+};
+
 
 const updateUser = async (req, res) => {
   try {
@@ -535,13 +550,12 @@ const deleteUsers = async (req, res) => {
 const changePasswordByAdmin = async (req, res) => {
   try {
 
-    const { _id } = req[AUTH_USER_DETAILS];
+    const { id } = req.params;
     const { password } = req.body;
-
 
     const encryptedPassword = await bcrypt.hashSync(password, 12);
     const changePassword = await userModel.findByIdAndUpdate(
-      { _id },
+      id,
       { password: encryptedPassword },
       { new: true }
     );

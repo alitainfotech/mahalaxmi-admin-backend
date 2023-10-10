@@ -16,6 +16,7 @@ const {
 } = require("../user/user.controller");
 const userModel = require("../../models/user.model");
 const { AUTH_MESSAGES } = require("../../controller_messages/auth.messages");
+const { default: mongoose } = require("mongoose");
 
 const login = async (req, res) => {
   try {
@@ -24,7 +25,6 @@ const login = async (req, res) => {
       code: code,
     });
 
-    console.log(user)
     if (user && (await comparePasswordHash(password, user.password))) {
       const userObj = user.toJSON();
       delete userObj.password;
@@ -41,6 +41,22 @@ const login = async (req, res) => {
       //   },
       //   { last_login: new Date() }
       // );
+      const users = await userModel.aggregate([
+        {
+          $match: { _id: user._id, is_deleted: false }
+        },
+        {
+          $lookup: {
+            from: 'roles',
+            localField: 'role',
+            foreignField: '_id',
+            as: 'roles'
+          }
+        },
+      ]);
+      
+      userObj.roles = users[0].roles;
+
       const responsePayload = {
         status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
         message: AUTH_MESSAGES.LOGIN_SUCCESSFUL,
@@ -58,6 +74,7 @@ const login = async (req, res) => {
       return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
     }
   } catch (err) {
+    console.log(err);
     const responsePayload = {
       status: RESPONSE_PAYLOAD_STATUS_ERROR,
       message: null,

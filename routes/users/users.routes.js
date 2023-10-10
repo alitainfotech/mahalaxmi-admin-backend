@@ -15,8 +15,8 @@ const userRouters = express.Router()
 userRouters.post("/add", uploadProfileImage.single("profile_photo"), usersValidationRules(), validateApi, addUsers)
 userRouters.put("/updateUsers/:id", auth, usersValidationRules(), validateApi, updateUser)
 userRouters.put("/deleteUsers/:id", auth, deleteUsers)
-userRouters.put("/changePassword", auth, changePasswordByAdmin)
-userRouters.get("/:id", getUserById)
+userRouters.put("/changePassword/:id", changePasswordByAdmin)
+userRouters.get("/:id", auth, getUserById)
 
 module.exports = {
     userRouters
