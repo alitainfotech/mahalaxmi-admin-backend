@@ -8,6 +8,7 @@ const {
   AUTH_USER_DETAILS,
   RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
   RESPONSE_STATUS_CODE_VALIDATION_ERROR,
+  RESPONSE_PAYLOAD_STATUS_WARNING,
 } = require("../../constants/global.constants");
 const userModel = require("../../models/user.model");
 const { USERS_MESSAGES } = require("../../controller_messages/users.messages");
@@ -300,7 +301,7 @@ const addUsers = async (req, res) => {
 
     if (existUser) {
       const responsePayload = {
-        status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
+        status: RESPONSE_PAYLOAD_STATUS_WARNING,
         message: USERS_MESSAGES.USERS_ALREADY_EXISTS,
         data: null,
         error: USERS_MESSAGES.USERS_ALREADY_EXISTS
@@ -383,9 +384,11 @@ const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const decryptedId = decryptObjectID(id, secretKey);
+
     const userObj = await userModel.aggregate([
       {
-        $match: { _id: new mongoose.Types.ObjectId(id), is_deleted: false }
+        $match: { _id: new mongoose.Types.ObjectId(decryptedId), is_deleted: false }
       },
       {
         $project: {
@@ -520,7 +523,7 @@ const deleteUsers = async (req, res) => {
       const responsePayload = {
         status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
         message: USERS_MESSAGES.USERS_DELETED,
-        data: deleteUser,
+        data: null,
         error: null,
       };
 
@@ -590,6 +593,45 @@ const changePasswordByAdmin = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    let usersData = await userModel.find({ is_deleted: false });
+
+    if (usersData) {
+      const responsePayload = {
+        status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
+        message: USERS_MESSAGES.USERS_ID_FOUND,
+        data: usersData || [],
+        error: null,
+      };
+
+      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+    } else {
+      const responsePayload = {
+        status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
+        message: USERS_MESSAGES.USERS_ID_NOT_FOUND,
+        data: null,
+        error: null,
+      };
+
+      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+    }
+
+  } catch (err) {
+    console.log(err);
+    const responsePayload = {
+      status: RESPONSE_PAYLOAD_STATUS_ERROR,
+      message: null,
+      data: null,
+      error: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
+    };
+
+    return res
+      .status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR)
+      .json(responsePayload);
+  }
+};
+
 
 module.exports = {
   addLogInToken,
@@ -597,7 +639,8 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUsers,
-  changePasswordByAdmin
+  changePasswordByAdmin,
+  getAllUsers
   // addResetPasswordToken,
   // getUser,
   // getUserAll,

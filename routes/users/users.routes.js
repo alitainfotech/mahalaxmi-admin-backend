@@ -4,7 +4,8 @@ const {
     getUserById,
     updateUser,
     deleteUsers,
-    changePasswordByAdmin
+    changePasswordByAdmin,
+    getAllUsers
 } = require("../../controllers/user/user.controller");
 const { usersValidationRules } = require("../../validation_rules/user.validation");
 const validateApi = require("../../middlewares/validator");
@@ -16,6 +17,7 @@ userRouters.post("/add", uploadProfileImage.single("profile_photo"), usersValida
 userRouters.put("/updateUsers/:id", auth, usersValidationRules(), validateApi, updateUser)
 userRouters.put("/deleteUsers/:id", auth, deleteUsers)
 userRouters.put("/changePassword/:id", changePasswordByAdmin)
+userRouters.get("/getAllUsers", auth, getAllUsers)
 userRouters.get("/:id", auth, getUserById)
 
 module.exports = {
