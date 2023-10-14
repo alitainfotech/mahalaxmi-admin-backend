@@ -190,7 +190,7 @@ const deleteRoles = async (req, res) => {
       const responsePayload = {
         status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
         message: ROLE_MESSAGES.ROLE_DELETED,
-        data: deleteRoles,
+        data: null,
         error: null,
       };
 

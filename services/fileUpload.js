@@ -1,36 +1,15 @@
-const multer = require("multer");
-const fs = require('fs');
-const path = require('path');
-const { profile_photo } = require("./config");
-const folderName = "public/images";
-
-const filePath = path.resolve(__dirname + "./../" + folderName)
-if (!fs.existsSync("public") || !fs.existsSync(folderName)) {
-//   fs.mkdirSync("public");
-  fs.mkdirSync("public/images")
-}
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.resolve(filePath + `/${profile_photo[file.fieldname]}`))
+const {
+  S3Client,
+  PutObjectCommand
+} = require("@aws-sdk/client-s3");
+const s3Config = {
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_ACCESS_SECRET,
   },
-  filename: function (req, file, cb) {
+  region: process.env.AWS_S3_BUCKET_REGION,
+};
 
-    const finalName = Date.now() + path.extname(file.originalname)
-    const folderCreate = path.resolve(__dirname + "./../" + folderName + `/${profile_photo[file.fieldname]}`)
+const s3Client = new S3Client(s3Config);
 
-    if (!fs.existsSync(folderCreate)) fs.mkdirSync(folderCreate)
-    req.body[file.fieldname] = `${profile_photo[file.fieldname]}/${finalName}`
-
-    if (!req["fields"]) {
-      req["fields"] = [file.fieldname]
-    } else {
-      req["fields"] = [...req.fields, file.fieldname];
-    }
-
-    cb(null, finalName)
-  }
-})
-
-const uploadProfileImage = multer({ storage: storage })
-
-module.exports = { uploadProfileImage }
+module.exports = { s3Client }

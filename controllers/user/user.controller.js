@@ -1,21 +1,21 @@
 const bcrypt = require("bcrypt");
+require("dotenv").config()
 
 const {
   RESPONSE_PAYLOAD_STATUS_SUCCESS,
   RESPONSE_STATUS_CODE_OK,
   RESPONSE_PAYLOAD_STATUS_ERROR,
   RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR,
-  AUTH_USER_DETAILS,
   RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
-  RESPONSE_STATUS_CODE_VALIDATION_ERROR,
   RESPONSE_PAYLOAD_STATUS_WARNING,
 } = require("../../constants/global.constants");
 const userModel = require("../../models/user.model");
 const { USERS_MESSAGES } = require("../../controller_messages/users.messages");
 const branchModel = require("../../models/branch.model");
 const { getCurrentLoginUser } = require("../../helpers/fn");
-const roleModel = require("../../models/role.model");
 const { default: mongoose } = require("mongoose");
+const { PutObjectCommand, HeadObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { s3Client } = require("../../services/fileUpload");
 
 // const {
 //   forgotPasswordMailer,
@@ -294,7 +294,7 @@ const addUsers = async (req, res) => {
       email, password, phone_number, address,
       city, state, gender, dob, joining_date,
       salary, account_number, ifsc_code,
-      holder_name, profile_photo } = req.body
+      holder_name } = req.body
 
 
     const existUser = await userModel.findOne({ email: email });
@@ -323,6 +323,41 @@ const addUsers = async (req, res) => {
       userCode = 1;
     }
 
+    const file = req.files.profile_photo;
+    const originalFileName = file.name;
+    const fileExtension = originalFileName.split('.').pop();
+    const profile_photo = `employee/profile_photo/${first_name}_${Date.now()}.${fileExtension}`;
+    // const profile_photo = `employee/profile_photo/${first_name}_${Date.now()}`;
+
+    const bucketParams = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: profile_photo,
+      Body: file.data,
+    };
+
+    try {
+      // const headObjectParams = {
+      //   Bucket: bucketParams.Bucket,
+      //   Key: bucketParams.Key
+      // };
+
+      // const headObjectData = await s3Client.send(new HeadObjectCommand(headObjectParams));
+
+      // if (headObjectData) {
+      //   const responsePayload = {
+      //     status: RESPONSE_PAYLOAD_STATUS_ERROR,
+      //     message: 'Profile photo with the same name already exists.',
+      //     data: null,
+      //     error: 'Profile photo with the same name already exists.',
+      //   };
+      //   return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+      // } else {
+        const data = await s3Client.send(new PutObjectCommand(bucketParams));
+      // }
+    } catch (err) {
+      console.log('Error occurred while uploading image to S3', err);
+    }
+
     const addUserData = {
       code: `MH${branchCodeFind}-` + (parseInt(userCode - 1) + 1).toString().padStart(3, '0'),
       role,
@@ -346,7 +381,7 @@ const addUsers = async (req, res) => {
       holder_name,
       profile_photo
     }
-    if (req.file) {
+    if (req.files) {
       const addUser = await userModel.create(addUserData)
 
       if (addUser) {
@@ -369,6 +404,7 @@ const addUsers = async (req, res) => {
     }
 
   } catch (error) {
+    console.log(error);
     const responsePayload = {
       status: RESPONSE_PAYLOAD_STATUS_ERROR,
       message: null,
@@ -384,11 +420,9 @@ const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const decryptedId = decryptObjectID(id, secretKey);
-
     const userObj = await userModel.aggregate([
       {
-        $match: { _id: new mongoose.Types.ObjectId(decryptedId), is_deleted: false }
+        $match: { _id: id, is_deleted: false }
       },
       {
         $project: {
@@ -442,58 +476,92 @@ const updateUser = async (req, res) => {
   try {
     let { id } = req.params
     const {
-      code, role, branch, designation,
+      role, branch, designation,
       first_name, middle_name, last_name,
-      email, phone_number, address,
+      phone_number, address,
       city, state, gender, dob, joining_date,
       salary, account_number, ifsc_code,
       holder_name } = req.body
 
-    const updateUser = await userModel.findByIdAndUpdate(
-      id,
-      {
-        role,
-        branch,
-        designation,
-        first_name,
-        middle_name,
-        last_name,
-        email,
-        phone_number,
-        address,
-        city,
-        state,
-        gender,
-        dob,
-        joining_date,
-        salary,
-        account_number,
-        ifsc_code,
-        holder_name,
-        updatedAt: Date.now()
-      },
-      { new: true }
-    )
-    if (updateUser) {
-      const userObj = updateUser.toJSON();
+    const existingUser = await userModel.findById(id);
+    if (existingUser) {
+      const existingProfilePhoto = existingUser.profile_photo;
 
-      delete userObj.password;
-      delete userObj.token;
-      const responsePayload = {
-        status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
-        message: USERS_MESSAGES.USERS_UPDATED,
-        data: userObj,
-        error: null
+      if (existingProfilePhoto) {
+        const deleteParams = {
+          Bucket: process.env.AWS_S3_BUCKET_NAME,
+          Key: existingProfilePhoto,
+        };
+        try {
+          await s3Client.send(new DeleteObjectCommand(deleteParams));
+        } catch (error) {
+          console.log('Error occurred while deleting the old image from S3', error);
+        }
       }
-      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload)
-    } else {
-      const responsePayload = {
-        status: RESPONSE_PAYLOAD_STATUS_ERROR,
-        message: USERS_MESSAGES.USERS_NOT_UPDATED,
-        data: null,
-        error: USERS_MESSAGES.USERS_NOT_UPDATED
+    }
+    
+    const file = req.files.profile_photo;
+    const originalFileName = file.name;
+    const fileExtension = originalFileName.split('.').pop();
+    const profile_photo = `employee/profile_photo/${first_name}_${Date.now()}.${fileExtension}`;
+
+    const bucketParams = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: profile_photo,
+      Body: file.data,
+    };
+
+    try {
+      const data = await s3Client.send(new PutObjectCommand(bucketParams));
+    } catch (error) {
+      console.log('Error occurred while uploading the image to S3', error);
+    }
+
+    const updateUser = {
+      profile_photo,
+      role,
+      branch,
+      designation,
+      first_name,
+      middle_name,
+      last_name,
+      phone_number,
+      address,
+      city,
+      state,
+      gender,
+      dob,
+      joining_date,
+      salary,
+      account_number,
+      ifsc_code,
+      holder_name,
+      updatedAt: Date.now()
+    }
+
+    if (req.files) {
+      const updateUserData = await userModel.findByIdAndUpdate(id, updateUser, { new: true })
+      if (updateUserData) {
+        const userObj = updateUserData.toJSON();
+
+        delete userObj.password;
+        delete userObj.token;
+        const responsePayload = {
+          status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
+          message: USERS_MESSAGES.USERS_UPDATED,
+          data: userObj,
+          error: null
+        }
+        return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload)
+      } else {
+        const responsePayload = {
+          status: RESPONSE_PAYLOAD_STATUS_ERROR,
+          message: USERS_MESSAGES.USERS_NOT_UPDATED,
+          data: null,
+          error: USERS_MESSAGES.USERS_NOT_UPDATED
+        }
+        return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload)
       }
-      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload)
     }
   } catch (error) {
     const responsePayload = {
@@ -595,7 +663,59 @@ const changePasswordByAdmin = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    let usersData = await userModel.find({ is_deleted: false });
+    // let usersData = await userModel.find({ is_deleted: false });
+    const usersData = await userModel.aggregate([
+      {
+        $match: { is_deleted: false }
+      },
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'role',
+          foreignField: '_id',
+          as: "rolesInfo"
+        }
+      },
+      {
+        $lookup: {
+          from: 'branches',
+          localField: 'branch',
+          foreignField: '_id',
+          as: 'branchInfo'
+        }
+      },
+      {
+        $lookup: {
+          from: 'designations',
+          localField: 'designation',
+          foreignField: '_id',
+          as: 'designationInfo'
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          code: 1,
+          first_name: 1,
+          middle_name: 1,
+          last_name: 1,
+          phone_number: 1,
+          address: 1,
+          city: 1,
+          state: 1,
+          gender: 1,
+          dob: 1,
+          joining_date: 1,
+          salary: 1,
+          account_number: 1,
+          ifsc_code: 1,
+          holder_name: 1,
+          'rolesInfo.name': 1,
+          'branchInfo.name': 1,
+          'designationInfo.name': 1
+        }
+      }
+    ]);
 
     if (usersData) {
       const responsePayload = {

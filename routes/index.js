@@ -7,6 +7,7 @@ const { payment_modeRouter } = require('./payment_mode/payment_mode.routes');
 const { designationRouter } = require('./designation/designation.routes');
 const { branchRouter } = require('./branch/branch.routes');
 const { userRouters } = require('./users/users.routes');
+const { customerRouter } = require('./customer/customer.routes');
 
 const indexRouter = new express.Router();
 
@@ -22,6 +23,7 @@ indexRouter.use("/paymentMode", payment_modeRouter)
 indexRouter.use("/designation", designationRouter)
 indexRouter.use("/branch", branchRouter)
 indexRouter.use("/users", userRouters)
+indexRouter.use("/customer", customerRouter)
 
 
 module.exports = indexRouter;
