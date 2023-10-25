@@ -51,7 +51,7 @@ const usersValidationRules = () => {
             },
             isEmail: {
                 errorMessage: USERS_MESSAGES.EMAIL_ERROR_INVALID,
-              },
+            },
         },
         password: {
             notEmpty: {
@@ -60,7 +60,7 @@ const usersValidationRules = () => {
             matches: {
                 options: [/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/],
                 errorMessage: USERS_MESSAGES.IN_VALID_PASSWORD_TYPE,
-              },
+            },
         },
         phone_number: {
             notEmpty: {
@@ -68,16 +68,21 @@ const usersValidationRules = () => {
             },
             matches: {
                 options: [
-                  /^(?:(?:\+|0{0,2})91(\s*|[\-])?|[0]?)?([6789]\d{2}([ -]?)\d{3}([ -]?)\d{4})$/,
+                    /^(?:(?:\+|0{0,2})91(\s*|[\-])?|[0]?)?([6789]\d{2}([ -]?)\d{3}([ -]?)\d{4})$/,
                 ],
                 errorMessage: USERS_MESSAGES.PHONE_NUMBER_MASSAGE,
-              },
+            },
         },
-        // profile_photo: {
-        //     notEmpty: {
-        //         errorMessage: USERS_MESSAGES.EMPTY_PROFILE_PHOTO,
-        //     }
-        // },
+        profile_photo: {
+            custom: {
+                options: (value, { req }) => {
+                    if (!req.files || !req.files.profile_photo) {
+                        throw new Error(USERS_MESSAGES.EMPTY_PROFILE_PHOTO);
+                    }
+                    return true;
+                },
+            },
+        },
         address: {
             notEmpty: {
                 errorMessage: USERS_MESSAGES.EMPTY_ADDRESS,
@@ -181,16 +186,21 @@ const updateUsersValidationRules = () => {
             },
             matches: {
                 options: [
-                  /^(?:(?:\+|0{0,2})91(\s*|[\-])?|[0]?)?([6789]\d{2}([ -]?)\d{3}([ -]?)\d{4})$/,
+                    /^(?:(?:\+|0{0,2})91(\s*|[\-])?|[0]?)?([6789]\d{2}([ -]?)\d{3}([ -]?)\d{4})$/,
                 ],
                 errorMessage: USERS_MESSAGES.PHONE_NUMBER_MASSAGE,
-              },
+            },
         },
-        // profile_photo: {
-        //     notEmpty: {
-        //         errorMessage: USERS_MESSAGES.EMPTY_PROFILE_PHOTO,
-        //     }
-        // },
+        profile_photo: {
+            custom: {
+                options: (value, { req }) => {
+                    if (!req.files || !req.files.profile_photo) {
+                        throw new Error(USERS_MESSAGES.EMPTY_PROFILE_PHOTO);
+                    }
+                    return true;
+                },
+            },
+        },
         address: {
             notEmpty: {
                 errorMessage: USERS_MESSAGES.EMPTY_ADDRESS,

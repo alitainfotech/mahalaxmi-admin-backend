@@ -14,7 +14,7 @@ const { USERS_MESSAGES } = require("../../controller_messages/users.messages");
 const branchModel = require("../../models/branch.model");
 const { getCurrentLoginUser } = require("../../helpers/fn");
 const { default: mongoose } = require("mongoose");
-const { PutObjectCommand, HeadObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { HeadObjectCommand, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { s3Client } = require("../../services/fileUpload");
 
 // const {
@@ -285,7 +285,7 @@ const addLogInToken = async (token, id) => {
 //   }
 // };
 
-
+// Add Users
 const addUsers = async (req, res) => {
   try {
     const {
@@ -327,7 +327,6 @@ const addUsers = async (req, res) => {
     const originalFileName = file.name;
     const fileExtension = originalFileName.split('.').pop();
     const profile_photo = `employee/profile_photo/${first_name}_${Date.now()}.${fileExtension}`;
-    // const profile_photo = `employee/profile_photo/${first_name}_${Date.now()}`;
 
     const bucketParams = {
       Bucket: process.env.AWS_S3_BUCKET_NAME,
@@ -352,7 +351,7 @@ const addUsers = async (req, res) => {
       //   };
       //   return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
       // } else {
-        const data = await s3Client.send(new PutObjectCommand(bucketParams));
+      const data = await s3Client.send(new PutObjectCommand(bucketParams));
       // }
     } catch (err) {
       console.log('Error occurred while uploading image to S3', err);
@@ -416,6 +415,7 @@ const addUsers = async (req, res) => {
   }
 }
 
+// Get Users By Id
 const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -471,7 +471,7 @@ const getUserById = async (req, res) => {
   }
 };
 
-
+// Update Users
 const updateUser = async (req, res) => {
   try {
     let { id } = req.params
@@ -499,7 +499,7 @@ const updateUser = async (req, res) => {
         }
       }
     }
-    
+
     const file = req.files.profile_photo;
     const originalFileName = file.name;
     const fileExtension = originalFileName.split('.').pop();
@@ -574,6 +574,7 @@ const updateUser = async (req, res) => {
   }
 }
 
+// Delete Users
 const deleteUsers = async (req, res) => {
   try {
     const { id } = req.params;
@@ -618,52 +619,15 @@ const deleteUsers = async (req, res) => {
   }
 }
 
-const changePasswordByAdmin = async (req, res) => {
-  try {
-
-    const { id } = req.params;
-    const { password } = req.body;
-
-    const encryptedPassword = await bcrypt.hashSync(password, 12);
-    const changePassword = await userModel.findByIdAndUpdate(
-      id,
-      { password: encryptedPassword },
-      { new: true }
-    );
-
-    if (changePassword) {
-      const responsePayload = {
-        status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
-        message: USERS_MESSAGES.USERS_PASSWORD_CHANGE,
-        data: changePassword,
-        error: null
-      };
-      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-    } else {
-      const responsePayload = {
-        status: RESPONSE_PAYLOAD_STATUS_ERROR,
-        message: USERS_MESSAGES.USERS_PASSWORD_NOT_CHANGE,
-        data: null,
-        error: null
-      };
-      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
-    }
-  } catch (error) {
-    const responsePayload = {
-      status: RESPONSE_PAYLOAD_STATUS_ERROR,
-      message: null,
-      data: null,
-      error: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
-    };
-    return res
-      .status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR)
-      .json(responsePayload);
-  }
-};
-
+// Get All Users
 const getAllUsers = async (req, res) => {
   try {
-    // let usersData = await userModel.find({ is_deleted: false });
+
+    const page = parseInt(req.query.page) || 1;
+    const perPage = parseInt(req.query.perPage) || 10;
+
+    const skip = (page - 1) * perPage;
+
     const usersData = await userModel.aggregate([
       {
         $match: { is_deleted: false }
@@ -714,6 +678,12 @@ const getAllUsers = async (req, res) => {
           'branchInfo.name': 1,
           'designationInfo.name': 1
         }
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: perPage,
       }
     ]);
 
@@ -752,6 +722,50 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+// Change Password By Admin
+const changePasswordByAdmin = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+    const { password } = req.body;
+
+    const encryptedPassword = await bcrypt.hashSync(password, 12);
+    const changePassword = await userModel.findByIdAndUpdate(
+      id,
+      { password: encryptedPassword },
+      { new: true }
+    );
+
+    if (changePassword) {
+      const responsePayload = {
+        status: RESPONSE_PAYLOAD_STATUS_SUCCESS,
+        message: USERS_MESSAGES.USERS_PASSWORD_CHANGE,
+        data: changePassword,
+        error: null
+      };
+      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+    } else {
+      const responsePayload = {
+        status: RESPONSE_PAYLOAD_STATUS_ERROR,
+        message: USERS_MESSAGES.USERS_PASSWORD_NOT_CHANGE,
+        data: null,
+        error: null
+      };
+      return res.status(RESPONSE_STATUS_CODE_OK).json(responsePayload);
+    }
+  } catch (error) {
+    const responsePayload = {
+      status: RESPONSE_PAYLOAD_STATUS_ERROR,
+      message: null,
+      data: null,
+      error: RESPONSE_STATUS_MESSAGE_INTERNAL_SERVER_ERROR,
+    };
+    return res
+      .status(RESPONSE_STATUS_CODE_INTERNAL_SERVER_ERROR)
+      .json(responsePayload);
+  }
+};
+
 
 module.exports = {
   addLogInToken,
@@ -761,10 +775,5 @@ module.exports = {
   deleteUsers,
   changePasswordByAdmin,
   getAllUsers
-  // addResetPasswordToken,
-  // getUser,
-  // getUserAll,
-  // updateUser,
-  // addUsers,
 };
 

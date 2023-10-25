@@ -8,11 +8,16 @@ const customerValidationRules = () => {
                 errorMessage: CUSTOMER_MESSAGES.EMPTY_BRANCH,
             }
         },
-        // profile_photo: {
-        //     notEmpty: {
-        //         errorMessage: CUSTOMER_MESSAGES.EMPTY_PROFILE_PHOTO,
-        //     }
-        // },
+        profile_photo: {
+            custom: {
+                options: (value, { req }) => {
+                    if (!req.files || !req.files.profile_photo) {
+                        throw new Error(CUSTOMER_MESSAGES.EMPTY_PROFILE_PHOTO);
+                    }
+                    return true;
+                },
+            },
+        },
         first_name: {
             notEmpty: {
                 errorMessage: CUSTOMER_MESSAGES.EMPTY_FIRST_NAME,

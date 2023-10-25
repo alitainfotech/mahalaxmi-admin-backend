@@ -12,9 +12,9 @@ const auth = require("../../middlewares/auth.guard");
 const customerRouter = express.Router();
 
 customerRouter.post("/addCustomer", customerValidationRules(), validateApi, addCustomer)
-customerRouter.put("/updateCustomer/:id", updateCustomer)
+customerRouter.put("/updateCustomer/:id", customerValidationRules(), validateApi, updateCustomer)
 customerRouter.get("/getCustomer/:id", getCustomerById)
-customerRouter.put("/deleteCustomer/:id", deleteCustomer)
+customerRouter.put("/deleteCustomer/:id", auth, deleteCustomer)
 customerRouter.get("/getAllCustomer", getAllCustomer)
 
 module.exports = {

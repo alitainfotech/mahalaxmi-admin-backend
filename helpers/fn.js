@@ -63,11 +63,16 @@ const generateCustomerCode = async () => {
   return nextCode;
 }
 
+function generateRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 module.exports = {
   passwordHash,
   comparePasswordHash,
   getCurrentLoginUser,
   encryptString,
   decryptObjectID,
-  generateCustomerCode
+  generateCustomerCode,
+  generateRandomNumber
 };

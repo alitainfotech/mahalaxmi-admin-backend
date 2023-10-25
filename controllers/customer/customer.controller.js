@@ -12,6 +12,7 @@ const { generateCustomerCode, getCurrentLoginUser } = require("../../helpers/fn"
 const customerModel = require("../../models/customer.model")
 const { s3Client } = require("../../services/fileUpload")
 
+// Add Customer
 const addCustomer = async (req, res) => {
     try {
         const {
@@ -99,6 +100,7 @@ const addCustomer = async (req, res) => {
     }
 }
 
+// Update Customer
 const updateCustomer = async (req, res) => {
     try {
         let { id } = req.params
@@ -192,6 +194,7 @@ const updateCustomer = async (req, res) => {
     }
 }
 
+// Get Customer By Id
 const getCustomerById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -226,6 +229,7 @@ const getCustomerById = async (req, res) => {
     }
 }
 
+// Get All Customer
 const getAllCustomer = async (req, res) => {
     try {
         const customerData = await customerModel.find({ is_deleted: false })
@@ -250,16 +254,17 @@ const getAllCustomer = async (req, res) => {
     }
 }
 
+// Delete Customer
 const deleteCustomer = async (req, res) => {
     try {
         const { id } = req.params;
-        // const user = await getCurrentLoginUser(req);
+        const user = await getCurrentLoginUser(req);
 
         const deleteCustomer = await customerModel.findByIdAndUpdate(
             id,
             {
                 is_deleted: true,
-                deleted_by: id,
+                deleted_by: user._id,
                 deleted_at: new Date(),
             }, { new: true }
         );

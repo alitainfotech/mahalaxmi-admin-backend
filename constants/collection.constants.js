@@ -8,4 +8,6 @@ module.exports = {
   BRANCH: "branches",
   CUSTOMER: "customers",
   BANKTRANSFER: "bank_transfers",
+  SETTING:"settings",
+  OTP_MANAGE:"otp_manages"
 };

@@ -8,6 +8,7 @@ const { designationRouter } = require('./designation/designation.routes');
 const { branchRouter } = require('./branch/branch.routes');
 const { userRouters } = require('./users/users.routes');
 const { customerRouter } = require('./customer/customer.routes');
+const { bankTransferRouter } = require('./bankTransfer/bankTransfer.routes');
 
 const indexRouter = new express.Router();
 
@@ -24,6 +25,7 @@ indexRouter.use("/designation", designationRouter)
 indexRouter.use("/branch", branchRouter)
 indexRouter.use("/users", userRouters)
 indexRouter.use("/customer", customerRouter)
+indexRouter.use("/bankTransfer", bankTransferRouter)
 
 
 module.exports = indexRouter;
